@@ -2,7 +2,8 @@
 
 A beautiful, dual-pane notepad application with built-in translation capabilities. Write notes in one language and instantly translate them to another!
 
-![TranslatePad Screenshot](https://via.placeholder.com/800x400.png?text=TranslatePad+Screenshot)
+![Screenshot_24-2-2026_22812_127 0 0 1](https://github.com/user-attachments/assets/47b475de-b34a-4ac5-aabf-765b765f58d0)
+
 
 ## Features
 
