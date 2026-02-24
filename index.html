@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TranslatePad - Notepad with Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #4a5568;
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .header i {
+            font-size: 28px;
+        }
+
+        .toolbar {
+            background: #edf2f7;
+            padding: 15px 20px;
+            border-bottom: 1px solid #cbd5e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .tool-btn:hover {
+            background: #e2e8f0;
+            border-color: #a0aec0;
+        }
+
+        .tool-btn.primary {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .tool-btn.primary:hover {
+            background: #5a67d8;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .note-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h3 {
+            color: #4a5568;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .word-count {
+            color: #718096;
+            font-size: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: 'Segoe UI', monospace;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .translation-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .language-select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stats-bar {
+            background: #f7fafc;
+            padding: 15px 20px;
+            border-top: 1px solid #cbd5e0;
+            display: flex;
+            gap: 20px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .save-indicator {
+            color: #48bb78;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .notes-list {
+            background: #f7fafc;
+            padding: 15px 20px;
+            border-top: 1px solid #cbd5e0;
+        }
+
+        .notes-list h4 {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .saved-notes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .note-item {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .note-item:hover {
+            background: #edf2f7;
+        }
+
+        .note-item .date {
+            color: #718096;
+            font-size: 12px;
+        }
+
+        .delete-note {
+            color: #fc8181;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-note:hover {
+            color: #f56565;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i>📝</i>
+            <h1>TranslatePad - Notepad with Translator</h1>
+        </div>
+
+        <div class="toolbar">
+            <div class="tool-group">
+                <button class="tool-btn" onclick="newNote()">
+                    <span>📄</span> New
+                </button>
+                <button class="tool-btn" onclick="saveNote()">
+                    <span>💾</span> Save
+                </button>
+                <button class="tool-btn" onclick="clearNote()">
+                    <span>🗑️</span> Clear
+                </button>
+                <button class="tool-btn" onclick="copyNote()">
+                    <span>📋</span> Copy
+                </button>
+            </div>
+            <div class="tool-group">
+                <input type="text" id="noteTitle" placeholder="Note title..." value="Untitled Note">
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Original Note Section -->
+            <div class="note-section">
+                <div class="section-header">
+                    <h3>Original Note</h3>
+                    <span class="word-count" id="originalWordCount">Words: 0</span>
+                </div>
+                <textarea id="originalNote" placeholder="Write your note here..." oninput="updateWordCount()"></textarea>
+            </div>
+
+            <!-- Translated Note Section -->
+            <div class="note-section">
+                <div class="section-header">
+                    <h3>Translated Note</h3>
+                    <span class="word-count" id="translatedWordCount">Words: 0</span>
+                </div>
+                <div class="translation-controls">
+                    <select id="targetLanguage" class="language-select">
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ar">Arabic</option>
+                        <option value="hi">Hindi</option>
+                        <option value="nl">Dutch</option>
+                    </select>
+                    <button class="tool-btn primary" onclick="translateNote()">
+                        <span>🔄</span> Translate
+                    </button>
+                </div>
+                <textarea id="translatedNote" placeholder="Translation will appear here..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <span>Characters: <span id="charCount">0</span></span>
+            <span>Lines: <span id="lineCount">0</span></span>
+            <span class="save-indicator" id="saveIndicator">💾 All changes saved</span>
+        </div>
+
+        <div class="notes-list">
+            <h4>Saved Notes</h4>
+            <div id="savedNotes" class="saved-notes"></div>
+        </div>
+    </div>
+
+    <script>
+        // Mock translation function (since we can't use actual translation API without key)
+        function mockTranslate(text, targetLang) {
+            const translations = {
+                es: 'Esta es una traducción simulada al español',
+                fr: 'Ceci est une traduction simulée en français',
+                de: 'Dies ist eine simulierte Übersetzung ins Deutsche',
+                it: 'Questa è una traduzione simulata in italiano',
+                pt: 'Esta é uma tradução simulada para o português',
+                ru: 'Это имитация перевода на русский язык',
+                ja: 'これは日本語への模擬翻訳です',
+                ko: '이것은 한국어로의 모의 번역입니다',
+                zh: '这是模拟翻译成中文',
+                ar: 'هذه ترجمة محاكاة إلى العربية',
+                hi: 'यह हिंदी में एक अनुकरण अनुवाद है',
+                nl: 'Dit is een gesimuleerde vertaling naar het Nederlands'
+            };
+            
+            if (text.trim() === '') return '';
+            return translations[targetLang] || 'Translation available in pro version';
+        }
+
+        // Update word count and stats
+        function updateWordCount() {
+            const originalText = document.getElementById('originalNote').value;
+            const translatedText = document.getElementById('translatedNote').value;
+            
+            // Word count
+            const originalWords = originalText.trim() ? originalText.trim().split(/\s+/).length : 0;
+            const translatedWords = translatedText.trim() ? translatedText.trim().split(/\s+/).length : 0;
+            
+            document.getElementById('originalWordCount').textContent = `Words: ${originalWords}`;
+            document.getElementById('translatedWordCount').textContent = `Words: ${translatedWords}`;
+            
+            // Character count
+            document.getElementById('charCount').textContent = originalText.length;
+            
+            // Line count
+            const lines = originalText.split('\n').filter(line => line.trim() !== '').length;
+            document.getElementById('lineCount').textContent = lines;
+        }
+
+        // Translate note
+        function translateNote() {
+            const originalText = document.getElementById('originalNote').value;
+            const targetLang = document.getElementById('targetLanguage').value;
+            
+            if (originalText.trim() === '') {
+                alert('Please enter some text to translate.');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('translatedNote').value = 'Translating...';
+            
+            // Simulate API delay
+            setTimeout(() => {
+                const translated = mockTranslate(originalText, targetLang);
+                document.getElementById('translatedNote').value = translated;
+                updateWordCount();
+                showSaveIndicator('Translation completed');
+            }, 500);
+        }
+
+        // Save note to localStorage
+        function saveNote() {
+            const title = document.getElementById('noteTitle').value || 'Untitled Note';
+            const content = document.getElementById('originalNote').value;
+            const translated = document.getElementById('translatedNote').value;
+            
+            if (content.trim() === '') {
+                alert('Cannot save an empty note.');
+                return;
+            }
+            
+            const note = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                translated: translated,
+                date: new Date().toLocaleString()
+            };
+            
+            let savedNotes = JSON.parse(localStorage.getItem('translatepad_notes') || '[]');
+            savedNotes.unshift(note);
+            
+            // Keep only last 10 notes
+            if (savedNotes.length > 10) {
+                savedNotes = savedNotes.slice(0, 10);
+            }
+            
+            localStorage.setItem('translatepad_notes', JSON.stringify(savedNotes));
+            displaySavedNotes();
+            showSaveIndicator('Note saved successfully!');
+        }
+
+        // Load a saved note
+        function loadNote(note) {
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('originalNote').value = note.content;
+            document.getElementById('translatedNote').value = note.translated || '';
+            updateWordCount();
+            showSaveIndicator(`Loaded: ${note.title}`);
+        }
+
+        // Delete a saved note
+        function deleteNote(id, event) {
+            event.stopPropagation();
+            
+            let savedNotes = JSON.parse(localStorage.getItem('translatepad_notes') || '[]');
+            savedNotes = savedNotes.filter(note => note.id !== id);
+            localStorage.setItem('translatepad_notes', JSON.stringify(savedNotes));
+            displaySavedNotes();
+            showSaveIndicator('Note deleted');
+        }
+
+        // Display saved notes
+        function displaySavedNotes() {
+            const savedNotes = JSON.parse(localStorage.getItem('translatepad_notes') || '[]');
+            const container = document.getElementById('savedNotes');
+            
+            if (savedNotes.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No saved notes yet</p>';
+                return;
+            }
+            
+            container.innerHTML = savedNotes.map(note => `
+                <div class="note-item" onclick="loadNote(${JSON.stringify(note).replace(/"/g, '&quot;')})">
+                    <span>📄</span>
+                    <span>${note.title}</span>
+                    <span class="date">${note.date}</span>
+                    <span class="delete-note" onclick="deleteNote(${note.id}, event)">✕</span>
+                </div>
+            `).join('');
+        }
+
+        // New note
+        function newNote() {
+            document.getElementById('noteTitle').value = 'Untitled Note';
+            document.getElementById('originalNote').value = '';
+            document.getElementById('translatedNote').value = '';
+            updateWordCount();
+            showSaveIndicator('New note created');
+        }
+
+        // Clear current note
+        function clearNote() {
+            if (confirm('Clear all text?')) {
+                document.getElementById('originalNote').value = '';
+                document.getElementById('translatedNote').value = '';
+                updateWordCount();
+                showSaveIndicator('Note cleared');
+            }
+        }
+
+        // Copy note to clipboard
+        function copyNote() {
+            const originalText = document.getElementById('originalNote').value;
+            const translatedText = document.getElementById('translatedNote').value;
+            const textToCopy = `Original:\n${originalText}\n\nTranslated:\n${translatedText}`;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showSaveIndicator('Copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy text');
+            });
+        }
+
+        // Show save indicator
+        function showSaveIndicator(message) {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.innerHTML = `💾 ${message}`;
+            indicator.style.color = '#48bb78';
+            
+            setTimeout(() => {
+                indicator.innerHTML = '💾 All changes saved';
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            displaySavedNotes();
+            updateWordCount();
+            
+            // Auto-save every 30 seconds
+            setInterval(() => {
+                const content = document.getElementById('originalNote').value;
+                if (content.trim() !== '') {
+                    localStorage.setItem('translatepad_autosave', content);
+                    showSaveIndicator('Auto-saved');
+                }
+            }, 30000);
+            
+            // Check for auto-saved content
+            const autoSaved = localStorage.getItem('translatepad_autosave');
+            if (autoSaved) {
+                if (confirm('Found auto-saved content. Load it?')) {
+                    document.getElementById('originalNote').value = autoSaved;
+                    updateWordCount();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
